@@ -34,7 +34,7 @@ PrefDB::PrefDB() :
 	TimeoutWatcher(5000),
 	good_state(true),
 	button(default_button),
-	trace(TraceDefault),
+	trace(TraceShape),
 	advanced_ignore(false),
 	proximity(false),
 	feedback(true),
@@ -72,8 +72,11 @@ template<class Archive> void PrefDB::serialize(Archive & ar, const unsigned int 
 		ar & help;
 	}
 	ar & trace.unsafe_ref();
-	if (trace.get() == TraceShape)
+	if ( (trace.get() > TraceWater) || (trace.get() < TraceDefault) )
+	{
 		trace.unsafe_ref() = TraceDefault;
+	}
+
 	if (version < 3) {
 		int delay;
 		ar & delay;
@@ -148,6 +151,7 @@ void PrefDB::timeout() {
 		ofs.close();
 		if (rename(tmp.c_str(), filename.c_str()))
 			throw std::runtime_error("rename() failed");
+		// printf("lzw saved trace:%d\n",this->trace.get());
 		if (verbosity >= 2)
 			printf("Saved preferences.\n");
 	} catch (std::exception &e) {
@@ -180,9 +184,11 @@ void PrefDB::init() {
 				std::ifstream ifs(filename.c_str(), std::ios::binary);
 				if (!ifs.fail()) {
 					boost::archive::text_iarchive ia(ifs);
-					ia >> *this;
+
+					ia >> *this;  //这里会调用serialize函数
+
 					if (verbosity >= 2)
-						std::cout << "Loaded preferences." << std::endl;
+						std::cout << "Loaded preferences:"<<filename << std::endl;
 				}
 			} catch (...) {
 				printf(_("Error: Couldn't read preferences.\n"));

@@ -70,6 +70,7 @@ static Trace *init_trace() {
 			case TraceNone:
 				return new Trivial();
 			case TraceShape:
+			case TraceDefault:
 				return new Shape();
 			case TraceAnnotate:
 				return new Annotate();
@@ -388,7 +389,9 @@ void App::on_activate() {
 
 	ROOT = DefaultRootWindow(dpy);
 
+	/*初始化参数*/
 	prefs.init();
+
 	action_watcher = new ActionDBWatcher;
 	action_watcher->init();
 
